@@ -31,7 +31,7 @@ func convertToHttpHandleFunc(fn apiFunc) http.HandlerFunc {
 			if err := fn(w, r); err != nil {
 				writeJSON(w, http.StatusBadRequest, ApiError{ Error: err.Error()})
 			}
-	}
+		}
 }
 
 func NewAPIServer(listenAddr string) *APIServer {
@@ -41,6 +41,7 @@ func NewAPIServer(listenAddr string) *APIServer {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 	router.HandleFunc("/account", convertToHttpHandleFunc(s.handleAccount))
+	router.HandleFunc("/account/{id}", convertToHttpHandleFunc((s.handleGetAccount)))
 	log.Println("JSON API server running and listening on port:", s.listenAddr)
 
 
@@ -63,7 +64,9 @@ func (s *APIServer) handleAccount(writer http.ResponseWriter, req *http.Request)
 }
 
 func (s *APIServer) handleGetAccount(writer http.ResponseWriter, req *http.Request) error {
-	return nil
+	account := NewAccount("Richard", "Schmidt")
+
+	return writeJSON(writer, http.StatusOK, account)
 }
 
 func (s *APIServer) handleCreateAccount(writer http.ResponseWriter, req *http.Request) error {
