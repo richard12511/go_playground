@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/richard12511/product_api/handlers"
@@ -24,5 +27,15 @@ func main(){
 		WriteTimeout: 2 * time.Second,
 	}
 
-	server.ListenAndServe()
+	sigChan := make(chan os.Signal, 2)
+	signal.Notify(sigChan, os.Interrupt)
+	signal.Notify(sigChan, syscall.SIGTERM)
+
+	go func() { server.ListenAndServe() }()
+
+	<- sigChan
+
+	logger.Println("Graceful shutdown starting now")
+	ctx, _ := context.WithTimeout(context.Background(), 90 * time.Second)
+	server.Shutdown(ctx)
 }
