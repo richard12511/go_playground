@@ -1,6 +1,11 @@
 package data
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"time"
+)
 
 type Product struct {
 	ID int `json:"id"`
@@ -16,7 +21,22 @@ type Product struct {
 type Products []*Product
 
 func AllProducts() Products {
-	return products
+	return Products(products)
+}
+
+func (p *Products) ToJSON(w io.Writer) error {
+	return json.NewEncoder(w).Encode(p)
+}
+
+func FromJSON(r io.Reader) (*Product, error) {
+	product := &Product{ CreatedAt: time.Now().UTC().String(), UpdatedAt: time.Now().UTC().String()}
+	err := json.NewDecoder(r).Decode(product)
+	fmt.Printf("**json: %v\n", product)
+	return product, err
+}
+
+func AddProduct(p *Product) {
+	products = append(products, p)
 }
 
 var products = []*Product{
