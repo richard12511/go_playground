@@ -17,26 +17,7 @@ func NewProductsHandler(logger *log.Logger) *Products {
 	return &Products{logger}
 }
 
-func (p *Products) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodGet {
-		p.getProducts(rw)
-	}
-	if req.Method == http.MethodPost {
-		p.postProduct(rw, req)
-	}
-	if req.Method == http.MethodPut {
-		vars := mux.Vars(req)
-
-		pId := vars["key"]
-		i, err := strconv.Atoi(pId)
-		if err != nil {
-			http.Error(rw, "Error converting key to int", http.StatusBadRequest)
-		}
-		p.updateProduct(rw, req, i)
-	}
-}
-
-func (p *Products) getProducts(rw http.ResponseWriter){
+func (p *Products) GetProducts(rw http.ResponseWriter, req *http.Request){
 	products := data.AllProducts()
 	err := products.ToJSON(rw)
 
@@ -46,7 +27,7 @@ func (p *Products) getProducts(rw http.ResponseWriter){
 	}
 }
 
-func (p *Products) postProduct(rw http.ResponseWriter, req *http.Request){
+func (p *Products) PostProduct(rw http.ResponseWriter, req *http.Request){
 	product, err := data.FromJSON(req.Body)
 
 	if err != nil {
@@ -56,7 +37,13 @@ func (p *Products) postProduct(rw http.ResponseWriter, req *http.Request){
 	data.AddProduct(product)
 }
 
-func (p *Products) updateProduct(rw http.ResponseWriter, req *http.Request, key int){
+func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request){
+	vars := mux.Vars(req)
+	key, err := strconv.Atoi(vars["key"])
+	if err != nil {
+		http.Error(rw, "key is not integer", http.StatusBadRequest)
+	}
+
 	product, err := data.FromJSON(req.Body)
 	if err != nil {
 		http.Error(rw, "Bad Request", http.StatusBadRequest)

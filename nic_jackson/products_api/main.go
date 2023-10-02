@@ -17,10 +17,16 @@ func main(){
 	logger := log.New(os.Stdout, "products_api", log.LstdFlags)
 	ph := handlers.NewProductsHandler(logger)
 
-	// mux := http.NewServeMux()
 	router := mux.NewRouter()
-	router.Handle("/products", ph)
-	router.Handle("/products/{key}", ph)
+
+	getRouter := router.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/", ph.GetProducts)
+
+	postRouter := router.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", ph.PostProduct)
+
+	putRouter := router.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{key:[0-9]+}", ph.UpdateProduct)
 
 	server := &http.Server{
 		Addr: ":9090",

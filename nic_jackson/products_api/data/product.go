@@ -30,13 +30,11 @@ func AddProduct(p *Product) {
 }
 
 func UpdateProduct(id int, p *Product) error {
-	fmt.Println("in UpdateProduct")
 	_, i, err := FindProduct(id)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("p in UpdateProduct %v", p)
 	p.ID = id
 	products[i] = p
 	return nil
